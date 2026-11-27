@@ -7,9 +7,16 @@ import ColorSegmenter from '../systems/ColorSegmenter.js';
 import Player from '../objects/Player.js';
 import SecurityCamera from '../objects/SecurityCamera.js';
 import TouchControls from '../ui/TouchControls.js';
+import ScannerDoor from '../objects/ScannerDoor.js';
+import ScannerPanel from '../ui/ScannerPanel.js';
+import GestureRecognizer from '../systems/GestureRecognizer.js';
 
-// Tempo (ms) que uma câmara precisa de ver o drone para disparar o alarme
-const TEMPO_ATE_ALARME = 600;
+// Formas que as portas podem pedir (uma é sorteada por porta)
+const FORMAS_PORTA = ['triangulo', 'quadrado', 'circulo'];
+
+// Tempo (ms) que uma câmara precisa de ver o drone para disparar o alarme.
+// Aumentar este valor torna o jogo mais fácil.
+const TEMPO_ATE_ALARME = 800;
 
 // Converte coordenadas de mosaicos para píxeis do mundo
 const px = (t) => t * TILE;
@@ -18,6 +25,7 @@ const py = (t) => HUD_ALTURA + t * TILE;
 export default class GameScene extends Phaser.Scene {
     constructor() { super('GameScene'); }
 
+    /** Recebe o nível, a pontuação e as vidas (vindos do menu ou do nível anterior). */
     init(data) {
         this.indiceNivel = data.nivel ?? 0;
         this.nivel = NIVEIS[this.indiceNivel];
@@ -30,11 +38,13 @@ export default class GameScene extends Phaser.Scene {
         this.terminou = false;
     }
 
+    /** Constrói o nível: chão, paredes, portas, ficheiros, núcleo, drone e câmaras. */
     create() {
         this.physics.world.setBounds(0, HUD_ALTURA, px(30), 15 * TILE);
 
         this.criarChao();
         this.criarParedes();
+        this.criarPortas();
         this.criarFicheiros();
         this.criarNucleo();
 
@@ -54,6 +64,10 @@ export default class GameScene extends Phaser.Scene {
         }).setDepth(16).setVisible(false);
 
         this.criarControlos();
+
+        // Painel do scanner das portas (conceito 2)
+        this.reconhecedor = new GestureRecognizer();
+        this.painel = new ScannerPanel(this, this.reconhecedor, (porta, sucesso) => this.tentativaPorta(porta, sucesso));
 
         // HUD numa cena paralela
         this.tempoInicio = this.time.now;
@@ -101,6 +115,7 @@ export default class GameScene extends Phaser.Scene {
         this.add.image(0, HUD_ALTURA, chave).setOrigin(0, 0);
     }
 
+    /** Cria as paredes (colisão + retângulos que bloqueiam a visão das câmaras). */
     criarParedes() {
         this.paredes = this.physics.add.staticGroup();
         this.retangulosParedes = [];
@@ -110,6 +125,12 @@ export default class GameScene extends Phaser.Scene {
             this.paredes.add(r);
             this.retangulosParedes.push(new Phaser.Geom.Rectangle(px(p.x), py(p.y), p.w * TILE, p.h * TILE));
         }
+    }
+
+    /** Cria as portas com scanner; cada uma pede uma forma sorteada. */
+    criarPortas() {
+        this.portas = (this.nivel.portas || []).map((def) =>
+            new ScannerDoor(this, def, Phaser.Utils.Array.GetRandom(FORMAS_PORTA), this.paredes, this.retangulosParedes));
     }
 
     // Aleatoriedade controlada: sorteia N posições das candidatas do nível
@@ -126,12 +147,14 @@ export default class GameScene extends Phaser.Scene {
         this.ficheirosApanhados = 0;
     }
 
+    /** Cria o núcleo de dados (a saída do nível). */
     criarNucleo() {
         const n = this.nivel.nucleo;
         this.nucleo = this.physics.add.staticImage(px(n.x) + TILE / 2, py(n.y) + TILE / 2, 'nucleo').setDepth(6);
         this.tweens.add({ targets: this.nucleo, angle: 360, duration: 4000, repeat: -1 });
     }
 
+    /** Teclado (WASD/setas, 1-3), controlos táteis e sobreposições (ficheiros e núcleo). */
     criarControlos() {
         this.cursores = this.input.keyboard.createCursorKeys();
         this.teclas = this.input.keyboard.addKeys('W,A,S,D,ONE,TWO,THREE');
@@ -140,7 +163,10 @@ export default class GameScene extends Phaser.Scene {
         this.teclas.THREE.on('down', () => this.mudarCor(2));
 
         // Controlos táteis só em dispositivos com toque
-        this.toque = this.sys.game.device.input.touch ? new TouchControls(this, (i) => this.mudarCor(i)) : null;
+        // O joystick ignora toques dentro da área de desenho do scanner
+        this.toque = this.sys.game.device.input.touch
+            ? new TouchControls(this, (i) => this.mudarCor(i), (p) => !(this.painel && this.painel.aberto && this.painel.dentroDaArea(p)))
+            : null;
 
         this.physics.add.overlap(this.player, this.ficheiros, (pl, f) => this.apanharFicheiro(f));
         this.physics.add.overlap(this.player, this.nucleo, () => this.chegarAoNucleo());
@@ -148,10 +174,12 @@ export default class GameScene extends Phaser.Scene {
 
     // ---------- Ações ----------
 
+    /** Muda a cor da camuflagem (tecla ou botão tátil). */
     mudarCor(i) {
         if (this.player.setCamuflagem(i)) this.sound.play('switch');
     }
 
+    /** O drone apanhou um ficheiro: soma pontos. */
     apanharFicheiro(f) {
         f.destroy();
         this.ficheirosApanhados++;
@@ -177,6 +205,17 @@ export default class GameScene extends Phaser.Scene {
         this.invulneravel = 1200;
     }
 
+    /** Resultado de uma tentativa no scanner: abre a porta se o padrão estiver certo. */
+    tentativaPorta(porta, sucesso) {
+        if (sucesso) {
+            porta.abrir();
+            this.sound.play('porta');
+        } else {
+            this.sound.play('erro');
+        }
+    }
+
+    /** O drone chegou ao núcleo: calcula os bónus e passa ao nível seguinte (ou ganha). */
     chegarAoNucleo() {
         if (this.terminou) return;
         this.terminou = true;
@@ -197,6 +236,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+    /** Vai para o ecrã de resultados. */
     terminarJogo(venceu) {
         this.terminou = true;
         this.scene.start('GameOverScene', { pontos: this.pontos, venceu });
@@ -204,9 +244,15 @@ export default class GameScene extends Phaser.Scene {
 
     // ---------- Ciclo do jogo ----------
 
+    /** Ciclo principal: movimento, scanner, análise de cor, câmaras e alarme. */
     update(tempo, delta) {
         if (this.terminou) return;
         this.lerMovimento();
+
+        // Abre o painel do scanner quando o drone está perto de uma porta fechada
+        const portaPerto = this.portas.find((p) => p.jogadorPerto(this.player));
+        if (portaPerto) this.painel.abrir(portaPerto);
+        else if (this.painel.aberto) this.painel.fechar();
 
         // Conceito 1: quanto o drone se destaca do fundo neste momento?
         const analise = this.segmentador.analisar(this.player.cor, this.player.x, this.player.y);
@@ -228,7 +274,9 @@ export default class GameScene extends Phaser.Scene {
             this.player.setAlpha(Math.floor(tempo / 100) % 2 ? 0.4 : 1);
         } else {
             this.player.setAlpha(1);
-            this.suspeita += (alguemVe ? delta : -delta * 0.5) / TEMPO_ATE_ALARME;
+            // Enquanto o jogador desenha no scanner, o alarme não sobe (jogo mais simples)
+            const visto = alguemVe && !this.painel.aberto;
+            this.suspeita += (visto ? delta : -delta * 0.5) / TEMPO_ATE_ALARME;
             this.suspeita = Phaser.Math.Clamp(this.suspeita, 0, 1);
             if (this.suspeita >= 1) this.serDetetado();
         }
@@ -237,6 +285,7 @@ export default class GameScene extends Phaser.Scene {
         this.atualizarHUD(analise.deltaE);
     }
 
+    /** Lê o teclado ou o joystick e move o drone. */
     lerMovimento() {
         let dx = 0, dy = 0;
         if (this.cursores.left.isDown || this.teclas.A.isDown) dx -= 1;
@@ -260,6 +309,7 @@ export default class GameScene extends Phaser.Scene {
             .setPosition(this.player.x - t, this.player.y - t - 18).setVisible(true);
     }
 
+    /** Envia os valores do HUD para a UIScene (através do registry). */
     atualizarHUD(dE) {
         // Visibilidade 0–100%: ΔE igual ao limiar = 50%
         const visibilidade = Phaser.Math.Clamp(dE / (this.limiar * 2), 0, 1);

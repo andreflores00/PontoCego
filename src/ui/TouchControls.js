@@ -10,8 +10,9 @@ export default class TouchControls {
     /**
      * @param {Phaser.Scene} scene
      * @param {(i:number)=>void} aoMudarCor chamado quando se toca num botão de cor
+     * @param {(p:Phaser.Input.Pointer)=>boolean} podeUsar devolve false para toques que o joystick deve ignorar
      */
-    constructor(scene, aoMudarCor) {
+    constructor(scene, aoMudarCor, podeUsar = () => true) {
         this.scene = scene;
         this.vetor = { x: 0, y: 0 };
         this.ponteiroJoystick = null;
@@ -33,7 +34,7 @@ export default class TouchControls {
 
         // O joystick só responde a toques na metade esquerda do ecrã
         scene.input.on('pointerdown', (p) => {
-            if (p.x < LARGURA / 2 && this.ponteiroJoystick === null) {
+            if (p.x < LARGURA / 2 && this.ponteiroJoystick === null && podeUsar(p)) {
                 this.ponteiroJoystick = p.id;
                 this.atualizar(p);
             }

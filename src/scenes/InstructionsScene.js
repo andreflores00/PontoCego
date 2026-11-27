@@ -20,11 +20,12 @@ export default class InstructionsScene extends Phaser.Scene {
             '2. Fica da cor do chão: a câmara compara a tua cor com o fundo (ΔE).',
             '    Se a diferença for pequena, és invisível mesmo dentro do cone.',
             '3. Vigia a barra de Visibilidade no topo do ecrã.',
+            '4. Nas portas, desenha a forma do modelo num só traço para abrir.',
             '',
             'Computador: WASD ou setas para mover · 1, 2, 3 para mudar de cor',
             'Telemóvel: joystick à esquerda · botões de cor à direita'
         ];
-        this.add.text(80, 120, linhas.join('\n'), {
+        this.add.text(80, 110, linhas.join('\n'), {
             fontFamily: 'Arial', fontSize: '21px', color: '#e6e8ee', lineSpacing: 8
         });
 

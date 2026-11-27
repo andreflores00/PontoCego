@@ -9,6 +9,7 @@
 // paredes:  retângulos sólidos (colisão e bloqueio da visão das câmaras)
 // cameras:  x, y (mosaicos), angulo (graus, 0 = direita, 90 = baixo),
 //           varrimento (± graus), velocidade (graus/s), campo (graus), alcance (px)
+// portas:   portas com scanner (x, y, w, h em mosaicos); a forma pedida é sorteada
 // ficheirosPossiveis: posições candidatas; em cada jogo são sorteadas algumas
 //           (aleatoriedade controlada)
 
@@ -34,6 +35,11 @@ export const NIVEIS = [
             { x: 10, y: 1, w: 1, h: 5 }, { x: 10, y: 9, w: 1, h: 5 },
             { x: 20, y: 1, w: 1, h: 9 }, { x: 20, y: 13, w: 1, h: 1 },
             { x: 14, y: 10, w: 2, h: 2 }
+        ],
+        // Portas nas passagens entre salas
+        portas: [
+            { x: 10, y: 6, w: 1, h: 3 },
+            { x: 20, y: 10, w: 1, h: 3 }
         ],
         cameras: [
             { x: 6.5, y: 1.15, angulo: 90, varrimento: 0, velocidade: 0, campo: 60, alcance: 300 },
@@ -66,6 +72,10 @@ export const NIVEIS = [
             { x: 10, y: 1, w: 1, h: 8 }, { x: 10, y: 12, w: 1, h: 2 },
             { x: 20, y: 4, w: 1, h: 10 },
             { x: 5, y: 5, w: 2, h: 2 }, { x: 24, y: 9, w: 2, h: 3 }
+        ],
+        portas: [
+            { x: 10, y: 9, w: 1, h: 3 },
+            { x: 20, y: 1, w: 1, h: 3 }
         ],
         cameras: [
             { x: 5, y: 1.15, angulo: 90, varrimento: 45, velocidade: 35, campo: 55, alcance: 320 },
