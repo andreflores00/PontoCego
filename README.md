@@ -18,6 +18,7 @@ Abrir a pasta no VS Code e usar o **Live Server** em `index.html` (os módulos E
 ## Conceitos técnicos
 
 1. **Segmentação por cor (ΔE em espaço Lab)** — `src/systems/ColorSegmenter.js` e `src/systems/ColorUtils.js`. A câmara lê os píxeis do chão à volta do drone, calcula a cor média em Lab e a distância ΔE (CIE76) à cor do drone. Acima do limiar, o drone é segmentado (bounding box) e o alarme enche.
+   No nível exterior há sombras fixas (edifício, árvores) e nuvens que passam: o chão fica mais escuro e o ΔE muda, por isso a camuflagem tem de ser ajustada (`src/objects/Nuvem.js`).
 2. **Correspondência de padrões ($1 Unistroke Recognizer)** — `src/systems/GestureRecognizer.js`, `src/objects/ScannerDoor.js` e `src/ui/ScannerPanel.js`. Perto de uma porta, o jogador desenha a forma pedida (triângulo, quadrado ou círculo). O traço é normalizado (reamostragem, rotação, escala, translação) e comparado com os modelos; a porta abre com a forma certa e semelhança ≥ 75%.
 
 ## Estrutura
@@ -28,10 +29,10 @@ lib/phaser.min.js          Phaser 4.2.1
 assets/sfx/                efeitos sonoros (gerados por código)
 src/main.js                configuração do Phaser
 src/config.js              constantes (cores, limiares, pontuação)
-src/scenes/                Boot, Preload, Menu, Instruções, Opções, Jogo, HUD, Game Over
-src/objects/               Player (drone), SecurityCamera, ScannerDoor
+src/scenes/                Boot, Preload, Menu, Instruções, Opções, Jogo, HUD, Pausa, Game Over
+src/objects/               Player (drone), SecurityCamera, ScannerDoor, Nuvem
 src/systems/               ColorUtils, ColorSegmenter, GestureRecognizer, LevelConfig
-src/ui/                    Botao, TouchControls, ScannerPanel
+src/ui/                    Botao, BotaoEcraInteiro, FundoMenu, TouchControls, ScannerPanel
 ```
 
 ## Créditos

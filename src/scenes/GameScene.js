@@ -10,6 +10,7 @@ import TouchControls from '../ui/TouchControls.js';
 import ScannerDoor from '../objects/ScannerDoor.js';
 import ScannerPanel from '../ui/ScannerPanel.js';
 import GestureRecognizer from '../systems/GestureRecognizer.js';
+import Nuvem, { FATOR_SOMBRA } from '../objects/Nuvem.js';
 
 // Formas que as portas podem pedir (uma é sorteada por porta)
 const FORMAS_PORTA = ['triangulo', 'quadrado', 'circulo'];
@@ -51,7 +52,10 @@ export default class GameScene extends Phaser.Scene {
 
         const ini = this.nivel.inicio;
         this.inicio = { x: px(ini.x) + TILE / 2, y: py(ini.y) + TILE / 2 };
-        this.player = new Player(this, this.inicio.x, this.inicio.y, this.nivel.camuflagemInicial);
+        // Cores de camuflagem deste nível (ou as de omissão)
+        this.camuflagens = this.nivel.camuflagens || CAMUFLAGENS;
+        this.player = new Player(this, this.inicio.x, this.inicio.y, this.camuflagens, this.nivel.camuflagemInicial);
+        this.criarNuvens();
         this.physics.add.collider(this.player, this.paredes);
 
         // Câmaras (as coordenadas do nível estão em mosaicos)
@@ -106,8 +110,19 @@ export default class GameScene extends Phaser.Scene {
         }
         ctx.putImageData(img, 0, 0);
 
-        // Linhas da grelha dos mosaicos (só visual)
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        // Linhas de estacionamento (só no exterior)
+        ctx.strokeStyle = 'rgba(235,235,235,0.85)'; ctx.lineWidth = 2;
+        for (const l of this.nivel.linhas || []) {
+            ctx.beginPath();
+            ctx.moveTo(l.x1 * TILE, l.y1 * TILE); ctx.lineTo(l.x2 * TILE, l.y2 * TILE);
+            ctx.stroke();
+        }
+
+        // Sombras fixas (edifícios, árvores): os píxeis ficam mesmo mais escuros
+        for (const s of this.nivel.sombras || []) this.escurecer(ctx, s.x * TILE, s.y * TILE, s.w * TILE, s.h * TILE, FATOR_SOMBRA);
+
+        // Linhas da grelha dos mosaicos (só visual; o exterior não tem grelha)
+        ctx.strokeStyle = this.nivel.exterior ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1;
         for (let x = 0; x <= w; x += TILE) { ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, h); ctx.stroke(); }
         for (let y = 0; y <= h; y += TILE) { ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); ctx.stroke(); }
 
@@ -120,12 +135,39 @@ export default class GameScene extends Phaser.Scene {
         this.add.image(0, HUD_ALTURA, chave).setOrigin(0, 0);
     }
 
+    /**
+     * Escurece uma zona da imagem (multiplica a cor dos píxeis por um fator).
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {number} fator 0..1 (0.6 = 60% da luz)
+     */
+    escurecer(ctx, x, y, w, h, fator) {
+        const zona = ctx.getImageData(x, y, w, h);
+        for (let i = 0; i < zona.data.length; i += 4) {
+            zona.data[i] *= fator; zona.data[i + 1] *= fator; zona.data[i + 2] *= fator;
+        }
+        ctx.putImageData(zona, x, y);
+    }
+
+    /**
+     * Cria as nuvens (se o nível as tiver) e liga a sua sombra ao segmentador,
+     * para as câmaras verem o chão mais escuro debaixo delas.
+     */
+    criarNuvens() {
+        this.nuvens = [];
+        const n = this.nivel.nuvens || 0;
+        for (let i = 0; i < n; i++) this.nuvens.push(new Nuvem(this, 170, 110, i * 520));
+        if (n > 0) {
+            this.segmentador.iluminacao = (x, y) => (this.nuvens.some((nv) => nv.cobre(x, y)) ? FATOR_SOMBRA : 1);
+        }
+    }
+
     /** Cria as paredes e os stands (colisão + retângulos que bloqueiam a visão das câmaras). */
     criarParedes() {
         this.paredes = this.physics.add.staticGroup();
         this.retangulosParedes = [];
         for (const p of this.nivel.paredes) this.criarObstaculo(p, 0x3b3e48, 0x5a5e6b);
         for (const s of this.nivel.stands || []) this.criarObstaculo(s, 0x6b5b95, 0xb8a9e0);
+        for (const o of this.nivel.obstaculos || []) this.criarObstaculo(o, o.cor, o.contorno ?? 0x000000, o.forma);
     }
 
     /**
@@ -133,10 +175,17 @@ export default class GameScene extends Phaser.Scene {
      * @param {{x:number,y:number,w:number,h:number}} o posição e tamanho em mosaicos
      * @param {number} cor cor de preenchimento
      * @param {number} contorno cor do contorno
+     * @param {string} forma 'circulo' desenha uma copa de árvore (a colisão continua retangular)
      */
-    criarObstaculo(o, cor, contorno) {
+    criarObstaculo(o, cor, contorno, forma) {
         const r = this.add.rectangle(px(o.x), py(o.y), o.w * TILE, o.h * TILE, cor)
             .setOrigin(0, 0).setStrokeStyle(1, contorno).setDepth(8);
+        if (forma === 'circulo') {
+            // Copa da árvore: círculo por cima do retângulo (que fica invisível)
+            r.setAlpha(0);
+            this.add.circle(px(o.x) + o.w * TILE / 2, py(o.y) + o.h * TILE / 2, o.w * TILE * 0.62, cor)
+                .setStrokeStyle(2, contorno).setDepth(8);
+        }
         this.paredes.add(r);
         this.retangulosParedes.push(new Phaser.Geom.Rectangle(px(o.x), py(o.y), o.w * TILE, o.h * TILE));
     }
@@ -192,7 +241,7 @@ export default class GameScene extends Phaser.Scene {
         // Controlos táteis só em dispositivos com toque
         // O joystick ignora toques dentro da área de desenho do scanner
         this.toque = this.sys.game.device.input.touch
-            ? new TouchControls(this, CAMUFLAGENS, (i) => this.mudarCor(i), (p) => !(this.painel && this.painel.aberto && this.painel.dentroDaArea(p)))
+            ? new TouchControls(this, this.camuflagens, (i) => this.mudarCor(i), (p) => !(this.painel && this.painel.aberto && this.painel.dentroDaArea(p)))
             : null;
         if (this.toque) this.toque.marcarAtivo(this.player.indiceCamuflagem);
 
@@ -233,10 +282,11 @@ export default class GameScene extends Phaser.Scene {
         const titulo = this.add.text(LARGURA / 2, y - 10, this.nivel.nome, {
             fontFamily: FONTE, fontSize: '28px', fontStyle: 'bold', color: TEMA.texto
         }).setOrigin(0.5).setDepth(151);
-        const sub = this.add.text(LARGURA / 2, y + 20, 'Apanha os ficheiros e chega ao núcleo sem seres visto', {
+        const dica = this.nivel.dica || 'Apanha os ficheiros e chega ao núcleo sem seres visto';
+        const sub = this.add.text(LARGURA / 2, y + 20, dica, {
             fontFamily: FONTE, fontSize: '15px', color: TEMA.destaqueCss
         }).setOrigin(0.5).setDepth(151);
-        this.tweens.add({ targets: [faixa, titulo, sub], alpha: 0, delay: 2200, duration: 600,
+        this.tweens.add({ targets: [faixa, titulo, sub], alpha: 0, delay: 3000, duration: 600,
             onComplete: () => { faixa.destroy(); titulo.destroy(); sub.destroy(); } });
     }
 
@@ -310,6 +360,7 @@ export default class GameScene extends Phaser.Scene {
     update(tempo, delta) {
         if (this.terminou) return;
         this.lerMovimento();
+        for (const nv of this.nuvens) nv.atualizar(delta);
 
         // Abre o painel do scanner quando o drone está perto de uma porta fechada
         const portaPerto = this.portas.find((p) => p.jogadorPerto(this.player));

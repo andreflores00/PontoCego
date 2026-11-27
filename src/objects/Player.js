@@ -1,12 +1,19 @@
 // =====================================================
 // Player.js — o drone controlado pelo jogador
 // =====================================================
-import { CAMUFLAGENS, rgbParaHex } from '../config.js';
+import { rgbParaHex } from '../config.js';
 
 const VELOCIDADE = 150;
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, camuflagemInicial = 0) {
+    /**
+     * @param {Phaser.Scene} scene
+     * @param {number} x posição inicial
+     * @param {number} y posição inicial
+     * @param {{nome:string, cor:object}[]} camuflagens cores disponíveis neste nível
+     * @param {number} camuflagemInicial índice da cor com que começa
+     */
+    constructor(scene, x, y, camuflagens, camuflagemInicial = 0) {
         super(scene, x, y, 'drone', 'f0');
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -17,20 +24,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setDepth(10);
         this.play('drone-voar');
 
+        this.camuflagens = camuflagens;
         this.indiceCamuflagem = -1;
         this.setCamuflagem(camuflagemInicial);
     }
 
     // Cor atual do drone em RGB (lida pelo ColorSegmenter)
     get cor() {
-        return CAMUFLAGENS[this.indiceCamuflagem].cor;
+        return this.camuflagens[this.indiceCamuflagem].cor;
     }
 
     // Muda a cor do módulo de camuflagem
     setCamuflagem(indice) {
-        if (indice === this.indiceCamuflagem || !CAMUFLAGENS[indice]) return false;
+        if (indice === this.indiceCamuflagem || !this.camuflagens[indice]) return false;
         this.indiceCamuflagem = indice;
-        this.setTint(rgbParaHex(CAMUFLAGENS[indice].cor));
+        this.setTint(rgbParaHex(this.camuflagens[indice].cor));
         return true;
     }
 

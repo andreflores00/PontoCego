@@ -93,3 +93,23 @@
 **Testes:** testei no browser do computador e numa emulação de telemóvel na horizontal (844x390, com toque).
 
 **Uso de IA:** código gerado com o Claude (Anthropic).
+
+## Sessão 3 (continuação) – 27 de novembro de 2026
+
+**Objetivo:** fazer a parte exterior da EXPONOR, como o professor sugeriu, e ligá-la ao conceito 1.
+
+**Atividades realizadas:**
+- O nível 2 deixou de ser o "Laboratório" e passou a ser o exterior: dois relvados, o parque de estacionamento no meio e a fachada de um pavilhão em cima. Tem carros estacionados, árvores e grades com um portão de scanner cada.
+- Sombras fixas: a fachada e as árvores fazem sombra. Os píxeis dessas zonas ficam mesmo mais escuros na imagem do chão (60% da luz), por isso a câmara vê outra cor.
+- Nuvens: duas sombras de nuvem atravessam o mapa devagar, cada uma a uma altura sorteada. O `ColorSegmenter` passou a ter uma função de iluminação: quando lê um píxel debaixo de uma nuvem, multiplica a cor por 0,6.
+- Cada nível pode agora ter as suas cores de camuflagem. No exterior são Relva, Relva à sombra e Alcatrão.
+- No início de cada nível, a faixa do título mostra uma dica própria desse nível.
+
+**Decisões:**
+- A sombra da nuvem é desenhada por baixo do drone. A ideia é que o painel de camuflagem do drone emite luz própria e não escurece. Assim, quando a nuvem passa por cima, o jogador tem de trocar para "Relva à sombra" ou esperar que ela passe.
+- Fiz as contas do ΔE antes de escolher as cores: relva ao sol contra relva à sombra dá cerca de 24, e alcatrão contra alcatrão à sombra cerca de 14. Os dois ficam acima do limiar normal (12), por isso a sombra obriga mesmo a reagir.
+- Guardei o jogo em `window.jogo` para o poder inspecionar na consola do browser durante os testes.
+
+**Testes:** testei o nível no browser. Com a cor "Relva" e o drone debaixo de uma nuvem, a visibilidade foi a 100%. Quando a nuvem passou, desceu para 16%.
+
+**Uso de IA:** código gerado com o Claude (Anthropic).

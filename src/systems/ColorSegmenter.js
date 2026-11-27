@@ -18,6 +18,9 @@ export default class ColorSegmenter {
         this.largura = imageData.width;
         this.altura = imageData.height;
         this.offsetY = offsetY;
+        // Função opcional (x, y) -> fator de luz (1 = sol, < 1 = sombra).
+        // Usada no exterior para as sombras das nuvens, que se movem.
+        this.iluminacao = null;
     }
 
     // Lê a cor de um píxel da imagem do chão (coordenadas do mundo)
@@ -26,7 +29,9 @@ export default class ColorSegmenter {
         const py = Math.floor(y - this.offsetY);
         if (px < 0 || py < 0 || px >= this.largura || py >= this.altura) return null;
         const i = (py * this.largura + px) * 4;
-        return { r: this.dados[i], g: this.dados[i + 1], b: this.dados[i + 2] };
+        // A cor vista pela câmara é a cor do chão multiplicada pela luz nesse ponto
+        const luz = this.iluminacao ? this.iluminacao(x, y) : 1;
+        return { r: this.dados[i] * luz, g: this.dados[i + 1] * luz, b: this.dados[i + 2] * luz };
     }
 
     /**

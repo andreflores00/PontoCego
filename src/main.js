@@ -32,4 +32,5 @@ const config = {
     scene: [BootScene, PreloadScene, MenuScene, InstructionsScene, OptionsScene, GameScene, UIScene, PauseScene, GameOverScene]
 };
 
-new Phaser.Game(config);
+// Fica guardado em window.jogo para se poder inspecionar na consola do browser (F12)
+window.jogo = new Phaser.Game(config);

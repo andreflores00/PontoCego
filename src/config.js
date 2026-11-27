@@ -20,10 +20,15 @@ export const CORES = {
     azulEscuro: { r: 40,  g: 64,  b: 110 },
     verde:      { r: 63,  g: 122, b: 74  },
     areia:      { r: 160, g: 138, b: 90  },
-    roxo:       { r: 96,  g: 70,  b: 130 }
+    roxo:       { r: 96,  g: 70,  b: 130 },
+    // Exterior
+    relva:       { r: 70,  g: 128, b: 62 },
+    relvaSombra: { r: 42,  g: 77,  b: 37 },   // relva com 60% da luz
+    alcatrao:    { r: 78,  g: 80,  b: 86 }
 };
 
-// Cores de camuflagem disponíveis para o drone (teclas 1, 2, 3)
+// Cores de camuflagem por omissão (teclas 1, 2, 3).
+// Cada nível pode ter as suas (ver "camuflagens" no LevelConfig).
 export const CAMUFLAGENS = [
     { nome: 'Azul',  cor: CORES.azul  },
     { nome: 'Verde', cor: CORES.verde },
