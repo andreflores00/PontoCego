@@ -53,3 +53,18 @@
 - O limiar de 75% está na constante `LIMIAR_PADRAO` em `ScannerPanel.js`, para ser fácil de ajustar.
 
 **Uso de IA:** código gerado com o Claude (Anthropic); testei as três formas no browser.
+
+## Sessão 2 (continuação) – 27 de novembro de 2026
+
+**Objetivo:** aplicar a sugestão do professor de usar a EXPONOR como cenário (parte interior).
+
+**Atividades realizadas:**
+- Procurei a planta da EXPONOR na internet. Não encontrei uma planta desenhada pública; usei a lista oficial de espaços do site da EXPONOR, que indica as posições relativas: o Hall 2 fica entre o Pavilhão 5 e o Foyer (entrada principal), e a Galeria 1 entre os Pavilhões 1 e 4.
+- O nível 1 passou a ser o interior da EXPONOR, numa versão simplificada: Foyer (entrada principal) → Hall 2 → Pavilhão 5.
+- Acrescentei stands de feira como obstáculos (colisão e bloqueio da visão das câmaras) e os nomes das zonas escritos no chão.
+
+**Decisões:**
+- Os nomes das zonas são objetos de texto por cima do chão e não são desenhados na imagem, para não alterarem os píxeis que as câmaras analisam.
+- A parte exterior (outdoor) fica para a próxima sessão, com sombras e variação de luz a afetar a deteção por cor.
+
+**Uso de IA:** código gerado com o Claude (Anthropic); testei o nível no browser.

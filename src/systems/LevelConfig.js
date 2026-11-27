@@ -9,13 +9,17 @@
 // paredes:  retângulos sólidos (colisão e bloqueio da visão das câmaras)
 // cameras:  x, y (mosaicos), angulo (graus, 0 = direita, 90 = baixo),
 //           varrimento (± graus), velocidade (graus/s), campo (graus), alcance (px)
+// stands:   obstáculos tipo stand de feira (colisão e bloqueio da visão, cor diferente)
+// zonas:    nomes das zonas escritos no chão (só visual)
 // portas:   portas com scanner (x, y, w, h em mosaicos); a forma pedida é sorteada
 // ficheirosPossiveis: posições candidatas; em cada jogo são sorteadas algumas
 //           (aleatoriedade controlada)
 
 export const NIVEIS = [
     {
-        nome: 'Nível 1 · Armazém',
+        // Interior inspirado na EXPONOR (versão simplificada): a entrada principal
+        // (Foyer), o Hall 2 e o Pavilhão 5, que ficam lado a lado no recinto real.
+        nome: 'Nível 1 · EXPONOR',
         inicio: { x: 2, y: 7 },
         nucleo: { x: 27, y: 7 },
         camuflagemInicial: 2, // começa com Areia, que não combina com a 1.ª sala
@@ -35,6 +39,16 @@ export const NIVEIS = [
             { x: 10, y: 1, w: 1, h: 5 }, { x: 10, y: 9, w: 1, h: 5 },
             { x: 20, y: 1, w: 1, h: 9 }, { x: 20, y: 13, w: 1, h: 1 },
             { x: 14, y: 10, w: 2, h: 2 }
+        ],
+        // Stands de feira dentro do Pavilhão 5
+        stands: [
+            { x: 25, y: 3, w: 2, h: 1 },
+            { x: 22, y: 12, w: 2, h: 1 }
+        ],
+        zonas: [
+            { x: 5, y: 13.3, texto: 'Foyer · Entrada principal' },
+            { x: 15, y: 13.3, texto: 'Hall 2' },
+            { x: 25, y: 13.3, texto: 'Pavilhão 5' }
         ],
         // Portas nas passagens entre salas
         portas: [

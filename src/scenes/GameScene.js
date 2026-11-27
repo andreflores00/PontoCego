@@ -43,6 +43,7 @@ export default class GameScene extends Phaser.Scene {
         this.physics.world.setBounds(0, HUD_ALTURA, px(30), 15 * TILE);
 
         this.criarChao();
+        this.criarZonas();
         this.criarParedes();
         this.criarPortas();
         this.criarFicheiros();
@@ -115,15 +116,37 @@ export default class GameScene extends Phaser.Scene {
         this.add.image(0, HUD_ALTURA, chave).setOrigin(0, 0);
     }
 
-    /** Cria as paredes (colisão + retângulos que bloqueiam a visão das câmaras). */
+    /** Cria as paredes e os stands (colisão + retângulos que bloqueiam a visão das câmaras). */
     criarParedes() {
         this.paredes = this.physics.add.staticGroup();
         this.retangulosParedes = [];
-        for (const p of this.nivel.paredes) {
-            const r = this.add.rectangle(px(p.x), py(p.y), p.w * TILE, p.h * TILE, 0x3b3e48)
-                .setOrigin(0, 0).setStrokeStyle(1, 0x5a5e6b).setDepth(8);
-            this.paredes.add(r);
-            this.retangulosParedes.push(new Phaser.Geom.Rectangle(px(p.x), py(p.y), p.w * TILE, p.h * TILE));
+        for (const p of this.nivel.paredes) this.criarObstaculo(p, 0x3b3e48, 0x5a5e6b);
+        for (const s of this.nivel.stands || []) this.criarObstaculo(s, 0x6b5b95, 0xb8a9e0);
+    }
+
+    /**
+     * Cria um obstáculo retangular (parede ou stand).
+     * @param {{x:number,y:number,w:number,h:number}} o posição e tamanho em mosaicos
+     * @param {number} cor cor de preenchimento
+     * @param {number} contorno cor do contorno
+     */
+    criarObstaculo(o, cor, contorno) {
+        const r = this.add.rectangle(px(o.x), py(o.y), o.w * TILE, o.h * TILE, cor)
+            .setOrigin(0, 0).setStrokeStyle(1, contorno).setDepth(8);
+        this.paredes.add(r);
+        this.retangulosParedes.push(new Phaser.Geom.Rectangle(px(o.x), py(o.y), o.w * TILE, o.h * TILE));
+    }
+
+    /**
+     * Escreve os nomes das zonas no chão.
+     * São objetos de texto por cima da imagem, por isso não alteram
+     * os píxeis que as câmaras analisam.
+     */
+    criarZonas() {
+        for (const z of this.nivel.zonas || []) {
+            this.add.text(px(z.x), py(z.y), z.texto, {
+                fontFamily: 'Arial', fontSize: '14px', color: '#ffffff'
+            }).setOrigin(0.5).setAlpha(0.55).setDepth(4);
         }
     }
 
