@@ -10,6 +10,7 @@ import OptionsScene from './scenes/OptionsScene.js';
 import GameScene from './scenes/GameScene.js';
 import UIScene from './scenes/UIScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
+import PauseScene from './scenes/PauseScene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -28,7 +29,7 @@ const config = {
     },
     // Permite vários toques ao mesmo tempo (joystick + botões no telemóvel)
     input: { activePointers: 3 },
-    scene: [BootScene, PreloadScene, MenuScene, InstructionsScene, OptionsScene, GameScene, UIScene, GameOverScene]
+    scene: [BootScene, PreloadScene, MenuScene, InstructionsScene, OptionsScene, GameScene, UIScene, PauseScene, GameOverScene]
 };
 
 new Phaser.Game(config);

@@ -12,7 +12,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);
 
         // Corpo circular mais pequeno que o sprite para deslizar nas paredes
-        this.body.setCircle(11, 3, 3);
+        this.body.setCircle(11, 7, 7); // raio 11 px, centrado no sprite de 36x36
         this.setCollideWorldBounds(true);
         this.setDepth(10);
         this.play('drone-voar');

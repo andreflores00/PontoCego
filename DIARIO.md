@@ -68,3 +68,28 @@
 - A parte exterior (outdoor) fica para a próxima sessão, com sombras e variação de luz a afetar a deteção por cor.
 
 **Uso de IA:** código gerado com o Claude (Anthropic); testei o nível no browser.
+
+## Sessão 3 – 27 de novembro de 2026
+
+**Objetivo:** deixar a interface mais bonita e preparar o jogo para o telemóvel.
+
+**Atividades realizadas:**
+- Defini um tema de cores e um tipo de letra comuns (`TEMA` e `FONTE` em `config.js`), num estilo de "sala de segurança": fundo escuro, turquesa como cor principal, amarelo nas portas e vermelho no alarme.
+- Os menus (Menu, Instruções, Opções e Game Over) passaram a ter um fundo animado com grelha, um cone de câmara a varrer e partículas (`FundoMenu.js`). Há transições com fade entre cenas.
+- Botões com cantos arredondados e efeito ao passar o rato. No menu, o drone flutua e vai trocando de cor.
+- As instruções estão agora em quatro cartões, um por mecânica.
+- Redesenhei o drone (4 frames com as hélices a rodar), a câmara, os ficheiros, o núcleo e um coração para as vidas.
+- HUD novo, organizado em blocos: pontos, ficheiros, nível, barras de visibilidade e de alarme, cor atual e vidas.
+- Menu de pausa (botão no HUD ou teclas P/ESC).
+- No início de cada nível aparece uma faixa com o nome do nível, e ao apanhar um ficheiro aparece "+100".
+- Telemóvel: botão de ecrã inteiro, aviso para rodar o telemóvel quando está na vertical, bloqueio do zoom e do scroll ao tocar, joystick e botões de cor maiores, com a cor ativa assinalada.
+
+**Problemas:**
+- Ao testar a pausa, a tecla P era apanhada pela UIScene e pela PauseScene ao mesmo tempo: o jogo retomava e voltava logo a pausar.
+
+**Solução:**
+- Só a UIScene trata as teclas P/ESC, e alterna entre pausar e retomar.
+
+**Testes:** testei no browser do computador e numa emulação de telemóvel na horizontal (844x390, com toque).
+
+**Uso de IA:** código gerado com o Claude (Anthropic).

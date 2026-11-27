@@ -1,7 +1,7 @@
 // =====================================================
 // GameScene.js — cena principal do jogo
 // =====================================================
-import { TILE, HUD_ALTURA, CORES, LIMIAR_DIFICULDADE, PONTOS, VIDAS_INICIAIS, rgbParaHex } from '../config.js';
+import { TILE, HUD_ALTURA, LARGURA, CORES, CAMUFLAGENS, LIMIAR_DIFICULDADE, PONTOS, VIDAS_INICIAIS, FONTE, TEMA, rgbParaHex } from '../config.js';
 import { NIVEIS } from '../systems/LevelConfig.js';
 import ColorSegmenter from '../systems/ColorSegmenter.js';
 import Player from '../objects/Player.js';
@@ -61,7 +61,7 @@ export default class GameScene extends Phaser.Scene {
         // Gráficos da "bounding box" da segmentação
         this.caixa = this.add.graphics().setDepth(15);
         this.textoDeltaE = this.add.text(0, 0, '', {
-            fontFamily: 'Arial', fontSize: '13px', color: '#ff6b6b', backgroundColor: '#000000aa'
+            fontFamily: FONTE, fontSize: '13px', fontStyle: 'bold', color: TEMA.perigoCss, backgroundColor: '#000000aa', padding: { x: 4, y: 1 }
         }).setDepth(16).setVisible(false);
 
         this.criarControlos();
@@ -75,7 +75,11 @@ export default class GameScene extends Phaser.Scene {
         this.scene.launch('UIScene', { nomeNivel: this.nivel.nome, totalFicheiros: this.totalFicheiros });
         this.atualizarHUD(0);
 
-        this.events.once('shutdown', () => this.scene.stop('UIScene'));
+        this.cameras.main.fadeIn(400, 11, 13, 18);
+        this.mostrarIntroNivel();
+
+        // Ao sair desta cena fecha também o HUD e a pausa
+        this.events.once('shutdown', () => { this.scene.stop('UIScene'); this.scene.stop('PauseScene'); });
     }
 
     // ---------- Construção do nível ----------
@@ -145,7 +149,7 @@ export default class GameScene extends Phaser.Scene {
     criarZonas() {
         for (const z of this.nivel.zonas || []) {
             this.add.text(px(z.x), py(z.y), z.texto, {
-                fontFamily: 'Arial', fontSize: '14px', color: '#ffffff'
+                fontFamily: FONTE, fontSize: '14px', color: '#ffffff'
             }).setOrigin(0.5).setAlpha(0.55).setDepth(4);
         }
     }
@@ -188,8 +192,9 @@ export default class GameScene extends Phaser.Scene {
         // Controlos táteis só em dispositivos com toque
         // O joystick ignora toques dentro da área de desenho do scanner
         this.toque = this.sys.game.device.input.touch
-            ? new TouchControls(this, (i) => this.mudarCor(i), (p) => !(this.painel && this.painel.aberto && this.painel.dentroDaArea(p)))
+            ? new TouchControls(this, CAMUFLAGENS, (i) => this.mudarCor(i), (p) => !(this.painel && this.painel.aberto && this.painel.dentroDaArea(p)))
             : null;
+        if (this.toque) this.toque.marcarAtivo(this.player.indiceCamuflagem);
 
         this.physics.add.overlap(this.player, this.ficheiros, (pl, f) => this.apanharFicheiro(f));
         this.physics.add.overlap(this.player, this.nucleo, () => this.chegarAoNucleo());
@@ -199,11 +204,45 @@ export default class GameScene extends Phaser.Scene {
 
     /** Muda a cor da camuflagem (tecla ou botão tátil). */
     mudarCor(i) {
-        if (this.player.setCamuflagem(i)) this.sound.play('switch');
+        if (this.player.setCamuflagem(i)) {
+            this.sound.play('switch');
+            if (this.toque) this.toque.marcarAtivo(i);
+            // Pequeno "pulso" visual no drone
+            this.tweens.add({ targets: this.player, scale: 1.25, duration: 90, yoyo: true });
+        }
+    }
+
+    /**
+     * Mostra um texto que sobe e desaparece (ex.: "+100").
+     * @param {number} x posição
+     * @param {number} y posição
+     * @param {string} texto texto a mostrar
+     * @param {string} cor cor CSS
+     */
+    textoFlutuante(x, y, texto, cor) {
+        const t = this.add.text(x, y, texto, {
+            fontFamily: FONTE, fontSize: '18px', fontStyle: 'bold', color: cor
+        }).setOrigin(0.5).setDepth(50).setShadow(0, 2, '#000000', 4);
+        this.tweens.add({ targets: t, y: y - 36, alpha: 0, duration: 900, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
+    }
+
+    /** Faixa com o nome do nível no início (desaparece sozinha). */
+    mostrarIntroNivel() {
+        const y = HUD_ALTURA + 60;
+        const faixa = this.add.rectangle(LARGURA / 2, y, LARGURA, 70, 0x000000, 0.7).setDepth(150);
+        const titulo = this.add.text(LARGURA / 2, y - 10, this.nivel.nome, {
+            fontFamily: FONTE, fontSize: '28px', fontStyle: 'bold', color: TEMA.texto
+        }).setOrigin(0.5).setDepth(151);
+        const sub = this.add.text(LARGURA / 2, y + 20, 'Apanha os ficheiros e chega ao núcleo sem seres visto', {
+            fontFamily: FONTE, fontSize: '15px', color: TEMA.destaqueCss
+        }).setOrigin(0.5).setDepth(151);
+        this.tweens.add({ targets: [faixa, titulo, sub], alpha: 0, delay: 2200, duration: 600,
+            onComplete: () => { faixa.destroy(); titulo.destroy(); sub.destroy(); } });
     }
 
     /** O drone apanhou um ficheiro: soma pontos. */
     apanharFicheiro(f) {
+        this.textoFlutuante(f.x, f.y - 10, '+' + PONTOS.ficheiro, TEMA.destaqueCss);
         f.destroy();
         this.ficheirosApanhados++;
         this.pontos += PONTOS.ficheiro;

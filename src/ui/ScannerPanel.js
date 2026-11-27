@@ -5,7 +5,7 @@
 // À esquerda mostra o modelo pedido; à direita há uma área onde
 // se desenha com o rato ou com o dedo. Ao largar, o traço é
 // enviado ao GestureRecognizer e o resultado aparece no ecrã.
-import { LARGURA, ALTURA } from '../config.js';
+import { LARGURA, ALTURA, FONTE, TEMA } from '../config.js';
 import ScannerDoor from '../objects/ScannerDoor.js';
 import { NOMES_FORMAS } from '../systems/GestureRecognizer.js';
 
@@ -34,17 +34,19 @@ export default class ScannerPanel {
 
         // Elementos gráficos (todos num contentor para mostrar/esconder de uma vez)
         this.contentor = scene.add.container(0, 0).setDepth(200).setVisible(false);
-        const fundo = scene.add.rectangle(PX, PY, PW, PH, 0x0d0e12, 0.92).setOrigin(0, 0).setStrokeStyle(2, 0xffc857);
-        const titulo = scene.add.text(PX + 16, PY + 10, 'Scanner da porta', { fontFamily: 'Arial', fontSize: '18px', color: '#ffc857' });
-        const tModelo = scene.add.text(PX + 20, PY + 42, 'Modelo', { fontFamily: 'Arial', fontSize: '14px', color: '#b8bcc6' });
+        const fundo = scene.add.graphics();
+        fundo.fillStyle(TEMA.fundo, 0.94).fillRoundedRect(PX, PY, PW, PH, 16);
+        fundo.lineStyle(2, TEMA.aviso, 1).strokeRoundedRect(PX, PY, PW, PH, 16);
+        const titulo = scene.add.text(PX + 16, PY + 10, 'Scanner da porta', { fontFamily: FONTE, fontSize: '18px', fontStyle: 'bold', color: TEMA.avisoCss });
+        const tModelo = scene.add.text(PX + 20, PY + 42, 'Modelo', { fontFamily: FONTE, fontSize: '14px', color: TEMA.textoSuave });
         const caixaModelo = scene.add.rectangle(PX + 20, PY + 62, 160, 130).setOrigin(0, 0).setStrokeStyle(1, 0x5a5e6b);
         const caixaDesenho = scene.add.rectangle(AREA.x, AREA.y, AREA.w, AREA.h, 0x1b1d24).setOrigin(0, 0).setStrokeStyle(1, 0xffffff);
         this.dicaDesenho = scene.add.text(AREA.x + AREA.w / 2, AREA.y + AREA.h / 2, 'Desenha aqui', {
-            fontFamily: 'Arial', fontSize: '16px', color: '#5a5e6b'
+            fontFamily: FONTE, fontSize: '16px', color: '#5a5e6b'
         }).setOrigin(0.5);
         this.gModelo = scene.add.graphics();
         this.gTraco = scene.add.graphics();
-        this.tResultado = scene.add.text(PX + 20, PY + 205, '', { fontFamily: 'Arial', fontSize: '15px', color: '#ffffff', wordWrap: { width: 170 } });
+        this.tResultado = scene.add.text(PX + 20, PY + 205, '', { fontFamily: FONTE, fontSize: '15px', color: '#ffffff', wordWrap: { width: 170 } });
 
         this.contentor.add([fundo, titulo, tModelo, caixaModelo, caixaDesenho, this.dicaDesenho, this.gModelo, this.gTraco, this.tResultado]);
 

@@ -2,15 +2,39 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- Sem zoom no telemóvel: os gestos são para o jogo -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Permite "Adicionar ao ecrã principal" e abrir sem a barra do browser -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b0d12">
     <title>Ponto Cego</title>
     <style>
-        html, body { margin: 0; padding: 0; background: #111; height: 100%; overflow: hidden; }
+        html, body {
+            margin: 0; padding: 0; height: 100%;
+            background: #0b0d12; overflow: hidden;
+            /* Impede o scroll, o zoom e a seleção de texto ao tocar no jogo */
+            touch-action: none; user-select: none; -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
         #jogo { width: 100%; height: 100%; }
+
+        /* Aviso para rodar o telemóvel (o jogo é na horizontal) */
+        #rodar {
+            display: none; position: fixed; inset: 0; z-index: 10;
+            background: #0b0d12; color: #e8ecf3;
+            font-family: "Segoe UI", Arial, sans-serif; font-size: 22px;
+            align-items: center; justify-content: center; text-align: center; padding: 24px;
+        }
+        #rodar span { display: block; font-size: 56px; margin-bottom: 12px; color: #4fd1c5; }
+        @media (orientation: portrait) and (pointer: coarse) {
+            #rodar { display: flex; }
+        }
     </style>
 </head>
 <body>
     <div id="jogo"></div>
+    <div id="rodar"><div><span>&#x21bb;</span>Roda o telemóvel para jogar na horizontal.</div></div>
 
     <!-- Phaser 4 (cópia local para funcionar sem internet na defesa) -->
     <script src="lib/phaser.min.js"></script>

@@ -48,6 +48,25 @@ export const PONTOS = {
 
 export const VIDAS_INICIAIS = 3;
 
+// Tipo de letra usado em todo o jogo (fontes do sistema, funcionam sem internet)
+export const FONTE = '"Segoe UI", "Trebuchet MS", Arial, sans-serif';
+
+// Cores do tema da interface (estilo "sala de segurança")
+export const TEMA = {
+    fundo: 0x0b0d12,        // fundo dos menus
+    painel: 0x141821,       // painéis e botões
+    painelClaro: 0x1e2430,  // botão com o rato por cima
+    linha: 0x2a3140,        // grelhas e contornos discretos
+    destaque: 0x4fd1c5,     // azul-turquesa (cor principal)
+    aviso: 0xffc857,        // amarelo (portas, scanner)
+    perigo: 0xff4d5e,       // vermelho (alarme, vidas)
+    texto: '#e8ecf3',
+    textoSuave: '#8d96a8',
+    destaqueCss: '#4fd1c5',
+    avisoCss: '#ffc857',
+    perigoCss: '#ff4d5e'
+};
+
 // Converte {r,g,b} para número hexadecimal (usado em tints e gráficos)
 export function rgbParaHex(c) {
     return (c.r << 16) | (c.g << 8) | c.b;
